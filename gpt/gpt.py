@@ -3,7 +3,7 @@ from discord import Message
 from redbot.core.commands import Context
 from redbot.core.bot import Red
 import logging
-from openai import AsyncOpenAI, OpenAIError
+from openai._client import AsyncOpenAI, OpenAIError
 
 class GPT(commands.Cog):
     def __init__(self, bot: Red):
