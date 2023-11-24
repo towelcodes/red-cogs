@@ -1,0 +1,9 @@
+{
+  "author": "towelsh",
+  "description": "Talk to ChatGPT from within your server. View documentation at https://github.com/towelsh/red-cogs/blob/main/gpt/README.md",
+  "install_msg": "**You need to set up your API key before you can talk to ChatGPT!** If you're not sure how, check the documentation at https://github.com/towelsh/red-cogs/blob/main/gpt/README.md",
+  "short": "Talk to ChatGPT from within your server.",
+  "requirements": [
+    "openai"
+  ]
+}
