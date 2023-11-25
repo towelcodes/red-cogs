@@ -14,8 +14,10 @@ If you want to setup a custom prompt, run `setprompt <prompt>`.
 
 ## Commands
 Once you have done the initial setup, server members can use the `chat <message>` command to talk to the bot, ping it in chat, or reply to one of its messages.
-| **Command**        | **Description**                                                    |
-|--------------------|--------------------------------------------------------------------|
-| chat <message>     | Send a message to ChatGPT                                          |
-| setprompt <prompt> | **[admin only]** Sets the prompt to ChatGPT for the current server |
-| getprompt          | **[admin only]** Gets the prompt to ChatGPT for the current server |
+| **Command**        | **Description**                                                                                        |
+|--------------------|--------------------------------------------------------------------------------------------------------|
+| chat <message>     | Send a message to ChatGPT                                                                              |
+| setprompt <prompt> | **[admin only]** Sets the prompt to ChatGPT for the current server                                     |
+| getprompt          | **[admin only]** Gets the prompt to ChatGPT for the current server                                     |
+| setmodel <model>   | **[admin only]** Sets the autocomplete model to use for the current server. Defaults to gpt-3.5-turbo. |
+| getmodel           | **[admin only]** Gets the autocomplete model to use for the current server.                            |
