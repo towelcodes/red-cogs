@@ -160,6 +160,84 @@ class VcTimer(commands.Cog):
         embed.set_footer(text=f"Total active users: {total_active_users}")
         await ctx.send(embed=embed)
 
+    @commands.guild_only()
+    @commands.command()
+    async def vc_user(self, ctx: commands.Context, user: discord.Member):
+        """Show a specific user's voice channel time."""
+        assert ctx.guild
+
+        users = await self.config.guild(ctx.guild).users()
+        monitored_channels = await self.config.guild(ctx.guild).monitor()
+
+        user_id = str(user.id)
+
+        current_channel = None
+        if user.voice and user.voice.channel:
+            if user.voice.channel.id in monitored_channels:
+                current_channel = user.voice.channel
+
+        if user_id not in users or users[user_id] == 0:
+            embed = Embed(
+                title="🎤 Voice Channel Time",
+                description=f"{user.display_name} has not spent any time in monitored voice channels yet.",
+                color=0xff9900
+            )
+        else:
+            total_time = int(users[user_id])
+            time_str = self._format_time(total_time)
+
+            sorted_users = sorted(users.items(), key=lambda x: int(x[1]), reverse=True)
+            rank = None
+            for i, (uid, _) in enumerate(sorted_users):
+                if uid == user_id:
+                    rank = i + 1
+                    break
+
+            embed = Embed(
+                title="🎤 Voice Channel Time",
+                color=0x00ff00
+            )
+
+            value_text = f"⏱️ Total Time: **{time_str}**\n📊 Rank: **#{rank}** out of {len(users)} users"
+
+            if current_channel:
+                value_text += f"\n🔴 Currently in: **{current_channel.name}**"
+            elif user.voice and user.voice.channel:
+                value_text += f"\n⚪ In voice (not monitored): **{user.voice.channel.name}**"
+            else:
+                value_text += "\n⚫ Not in voice channel"
+
+            embed.add_field(
+                name=f"{user.display_name}",
+                value=value_text,
+                inline=False
+            )
+
+            embed.set_thumbnail(url=user.display_avatar.url)
+
+        if user_id not in users or users[user_id] == 0:
+            if current_channel:
+                embed.add_field(
+                    name="Current Status",
+                    value=f"🔴 Currently in: **{current_channel.name}**\n⏱️ Time counting now!",
+                    inline=False
+                )
+            elif user.voice and user.voice.channel:
+                embed.add_field(
+                    name="Current Status",
+                    value=f"⚪ In voice (not monitored): **{user.voice.channel.name}**",
+                    inline=False
+                )
+            else:
+                embed.add_field(
+                    name="Current Status",
+                    value="⚫ Not in voice channel",
+                    inline=False
+                )
+
+        await ctx.send(embed=embed)
+
+
     @override
     async def cog_load(self):
         print("adding task")
