@@ -1,0 +1,7 @@
+{
+  "author": ["towelcodes"],
+  "description": "Track and monitor user time spent in voice channels. Automatically monitors specified voice channels and provides leaderboards showing who has spent the most time in voice chat.",
+  "install_msg": "VcTimer has been installed! Use `!add_monitor <voice_channel>` to start monitoring voice channels, then use `!vc_longest_time` to see the leaderboard.",
+  "short": "Track user voice channel time and display leaderboards.",
+  "requirements": []
+}
