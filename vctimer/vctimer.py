@@ -87,7 +87,7 @@ class VcTimer(commands.Cog):
 
                 if user:
                     embed.add_field(
-                        name=f"#{i+1} {user.display_name}",
+                        name=f"#{i+1} {user.display_name} ({user.name})",
                         value=f"⏱️ {time_str}",
                         inline=False
                     )
