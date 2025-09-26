@@ -80,22 +80,22 @@ class VcTimer(commands.Cog):
             description="Top users by total time in monitored voice channels",
             color=0x00ff00
         )
-        for i, (user_id, total_time) in enumerate(sorted_users[:5]):
+        for i, (user_id, total_time) in enumerate(sorted_users[:10]):
             try:
                 user = ctx.guild.get_member(int(user_id))
                 time_str = self._format_time(int(total_time))
 
                 if user:
                     embed.add_field(
-                        name=f"#{i+1} {user.display_name} ({user.name})",
-                        value=f"⏱️ {time_str}",
+                        name=f"#{i+1} {user.mention} - ⏱️ {time_str}",
+                        value="",
                         inline=False
                     )
                 else:
                     # user left the server, but we can still show their ID
                     embed.add_field(
-                        name=f"#{i+1} User ID: {user_id}",
-                        value=f"⏱️ {time_str} (User left server)",
+                        name=f"#{i+1} User ID: {user_id} (left server)",
+                        value="",
                         inline=False
                     )
             except ValueError:
