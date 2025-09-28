@@ -11,14 +11,16 @@ from discord.enums import ChannelType
 from redbot.core import commands, Config
 from discord import Embed
 
+
 class VcTimer(commands.Cog):
     def __init__(self, bot: commands.Bot):  # pyright: ignore[reportMissingSuperCall]
         self.bot: commands.Bot = bot
         self.config: Config = Config.get_conf(self, identifier=90834609231)
-        self.check_vc_task: Union[Task[None],  None] = None
+        self.check_vc_task: Union[Task[None], None] = None
         default_guild: Dict[str, Any] = {
             "monitor": [],
             "users": {},
+            "inactive": {},
         }
         self.config.register_guild(**default_guild)
 
@@ -43,24 +45,38 @@ class VcTimer(commands.Cog):
                     if not monitored_channels:
                         continue
                     async with self.config.guild(guild).users() as users:
-                        for channel_id in monitored_channels:
-                            channel = guild.get_channel(channel_id)
-                            if not channel or channel.type != ChannelType.voice:
-                                continue
-
-                            for member in channel.members:
-                                print("channel member:", member)
-                                if member.bot:
+                        async with self.config.guild(guild).inactive() as inactive:
+                            for channel_id in monitored_channels:
+                                channel = guild.get_channel(channel_id)
+                                if not channel or channel.type != ChannelType.voice:
                                     continue
 
-                                user_id = str(member.id)
+                                # Get all non-bot members in the channel
+                                non_bot_members = [
+                                    member
+                                    for member in channel.members
+                                    if not member.bot
+                                ]
 
-                                if user_id not in users:
-                                    users[user_id] = 10  # 10 seconds for first time
-                                    print(users[user_id])
-                                else:
-                                    users[user_id] += 10  # Increment by 10 seconds
-                                    print(users[user_id])
+                                # Check if there are at least 2 non-bot users
+                                has_multiple_users = len(non_bot_members) >= 2
+
+                                for member in non_bot_members:
+                                    print("channel member:", member)
+                                    user_id = str(member.id)
+
+                                    if has_multiple_users:
+                                        # time with others
+                                        if user_id not in users:
+                                            users[user_id] = 10
+                                        else:
+                                            users[user_id] += 10
+                                    else:
+                                        # time alone
+                                        if user_id not in inactive:
+                                            inactive[user_id] = 10
+                                        else:
+                                            inactive[user_id] += 10
             except Exception as e:
                 print(f"error in check_vc: {e}")
             await asyncio.sleep(10)
@@ -70,6 +86,7 @@ class VcTimer(commands.Cog):
     async def vc_longest_time(self, ctx: commands.Context):
         assert ctx.guild
         users = await self.config.guild(ctx.guild).users()
+        inactive = await self.config.guild(ctx.guild).inactive()
 
         if not users:
             await ctx.send("No voice channel data available yet.")
@@ -78,25 +95,33 @@ class VcTimer(commands.Cog):
         embed = Embed(
             title="🎤 Voice Channel Leaderboard",
             description="Top users by total time in monitored voice channels",
-            color=0x00ff00
+            color=0x00FF00,
         )
         for i, (user_id, total_time) in enumerate(sorted_users[:10]):
             try:
                 user = ctx.guild.get_member(int(user_id))
                 time_str = self._format_time(int(total_time))
 
+                # get inactive time for this user
+                inactive_time = inactive.get(user_id, 0)
+                inactive_str = (
+                    self._format_time(int(inactive_time)) if inactive_time > 0 else "0s"
+                )
+
+                value_text = f"💤 Inactive: {inactive_str}"
+
                 if user:
                     embed.add_field(
-                        name=f"#{i+1} {user.name} - ⏱️ {time_str}",
-                        value="",
-                        inline=False
+                        name=f"#{i + 1} {user.name} - ⏱️ {time_str}",
+                        value=value_text,
+                        inline=False,
                     )
                 else:
                     # user left the server, but we can still show their ID
                     embed.add_field(
-                        name=f"#{i+1} User ID: {user_id} (left server)",
-                        value="",
-                        inline=False
+                        name=f"#{i + 1} User ID: {user_id} (left server)",
+                        value=value_text,
+                        inline=False,
                     )
             except ValueError:
                 continue
@@ -120,7 +145,7 @@ class VcTimer(commands.Cog):
         embed = Embed(
             title="🔍 Voice Channel Status",
             description="Current monitoring status",
-            color=0x0099ff
+            color=0x0099FF,
         )
 
         total_active_users = 0
@@ -132,7 +157,7 @@ class VcTimer(commands.Cog):
                 embed.add_field(
                     name=f"❌ Channel ID: {channel_id}",
                     value="Channel not found or not a voice channel",
-                    inline=False
+                    inline=False,
                 )
                 continue
 
@@ -148,13 +173,11 @@ class VcTimer(commands.Cog):
                 embed.add_field(
                     name=f"🎤 {channel.name}",
                     value=f"**{member_count}** user{'s' if member_count != 1 else ''}: {member_list}",
-                    inline=False
+                    inline=False,
                 )
             else:
                 embed.add_field(
-                    name=f"💤 {channel.name}",
-                    value="No users currently",
-                    inline=False
+                    name=f"💤 {channel.name}", value="No users currently", inline=False
                 )
 
         embed.set_footer(text=f"Total active users: {total_active_users}")
@@ -180,7 +203,7 @@ class VcTimer(commands.Cog):
             embed = Embed(
                 title="🎤 Voice Channel Time",
                 description=f"{user.display_name} has not spent any time in monitored voice channels yet.",
-                color=0xff9900
+                color=0xFF9900,
             )
         else:
             total_time = int(users[user_id])
@@ -193,25 +216,20 @@ class VcTimer(commands.Cog):
                     rank = i + 1
                     break
 
-            embed = Embed(
-                title="🎤 Voice Channel Time",
-                color=0x00ff00
-            )
+            embed = Embed(title="🎤 Voice Channel Time", color=0x00FF00)
 
             value_text = f"⏱️ Total Time: **{time_str}**\n📊 Rank: **#{rank}** out of {len(users)} users"
 
             if current_channel:
                 value_text += f"\n🔴 Currently in: **{current_channel.name}**"
             elif user.voice and user.voice.channel:
-                value_text += f"\n⚪ In voice (not monitored): **{user.voice.channel.name}**"
+                value_text += (
+                    f"\n⚪ In voice (not monitored): **{user.voice.channel.name}**"
+                )
             else:
                 value_text += "\n⚫ Not in voice channel"
 
-            embed.add_field(
-                name=f"{user.display_name}",
-                value=value_text,
-                inline=False
-            )
+            embed.add_field(name=f"{user.display_name}", value=value_text, inline=False)
 
             embed.set_thumbnail(url=user.display_avatar.url)
 
@@ -220,23 +238,20 @@ class VcTimer(commands.Cog):
                 embed.add_field(
                     name="Current Status",
                     value=f"🔴 Currently in: **{current_channel.name}**\n⏱️ Time counting now!",
-                    inline=False
+                    inline=False,
                 )
             elif user.voice and user.voice.channel:
                 embed.add_field(
                     name="Current Status",
                     value=f"⚪ In voice (not monitored): **{user.voice.channel.name}**",
-                    inline=False
+                    inline=False,
                 )
             else:
                 embed.add_field(
-                    name="Current Status",
-                    value="⚫ Not in voice channel",
-                    inline=False
+                    name="Current Status", value="⚫ Not in voice channel", inline=False
                 )
 
         await ctx.send(embed=embed)
-
 
     @override
     async def cog_load(self):
@@ -259,19 +274,27 @@ class VcTimer(commands.Cog):
         async with self.config.guild(ctx.guild).monitor() as monitors:
             if channel_id not in monitors:
                 monitors.append(channel_id)
-                await ctx.send(f"Voice channel {channel.name} has been added to the monitor list.")
+                await ctx.send(
+                    f"Voice channel {channel.name} has been added to the monitor list."
+                )
             else:
-                await ctx.send(f"Voice channel {channel.name} is already being monitored.")
+                await ctx.send(
+                    f"Voice channel {channel.name} is already being monitored."
+                )
 
     @commands.guild_only()
     @commands.admin_or_can_manage_channel()
     @commands.command()
-    async def remove_monitor(self, ctx: commands.Context, channel: discord.VoiceChannel):
+    async def remove_monitor(
+        self, ctx: commands.Context, channel: discord.VoiceChannel
+    ):
         assert ctx.guild
         channel_id = channel.id
         async with self.config.guild(ctx.guild).monitor() as monitors:
             if channel_id in monitors:
                 monitors.remove(channel_id)
-                await ctx.send(f"Voice channel {channel.name} has been removed from the monitor list.")
+                await ctx.send(
+                    f"Voice channel {channel.name} has been removed from the monitor list."
+                )
             else:
                 await ctx.send(f"Voice channel {channel.name} is not being monitored.")
