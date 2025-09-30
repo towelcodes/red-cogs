@@ -263,7 +263,7 @@ class VcTimer(commands.Cog):
                 ctx.send("User has no time registered")
                 return
             users[user.id] += time
-            ctx.send(
+            await ctx.send(
                 "Added " + self._format_time(time) + " to " + user.name + "'s time"
             )
 
@@ -279,7 +279,7 @@ class VcTimer(commands.Cog):
                 ctx.send("User has no time registered")
                 return
             users[user.id] -= time
-            ctx.send(
+            await ctx.send(
                 "Subtracted "
                 + self._format_time(time)
                 + " from "
