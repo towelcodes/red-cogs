@@ -253,6 +253,40 @@ class VcTimer(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @commands.admin_or_can_manage_channel()
+    @commands.guild_only()
+    @commands.command()
+    async def add_time(self, ctx: commands.Context, user: discord.Member, time: int):
+        assert ctx.guild
+        async with self.config.guild(ctx.guild).users() as users:
+            if user.id not in users:
+                ctx.send("User has no time registered")
+                return
+            users[user.id] += time
+            ctx.send(
+                "Added " + self._format_time(time) + " to " + user.name + "'s time"
+            )
+
+    @commands.admin_or_can_manage_channel()
+    @commands.guild_only()
+    @commands.command()
+    async def subtract_time(
+        self, ctx: commands.Context, user: discord.Member, time: int
+    ):
+        assert ctx.guild
+        async with self.config.guild(ctx.guild).users() as users:
+            if user.id not in users:
+                ctx.send("User has no time registered")
+                return
+            users[user.id] -= time
+            ctx.send(
+                "Subtracted "
+                + self._format_time(time)
+                + " from "
+                + user.name
+                + "'s time"
+            )
+
     @override
     async def cog_load(self):
         print("adding task")
