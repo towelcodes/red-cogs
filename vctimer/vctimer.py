@@ -259,10 +259,10 @@ class VcTimer(commands.Cog):
     async def add_time(self, ctx: commands.Context, user: discord.Member, time: int):
         assert ctx.guild
         async with self.config.guild(ctx.guild).users() as users:
-            if user.id not in users:
+            if str(user.id) not in users:
                 await ctx.send("User has no time registered")
                 return
-            users[user.id] += time
+            users[str(user.id)] += time
             await ctx.send(
                 "Added " + self._format_time(time) + " to " + user.name + "'s time"
             )
@@ -275,10 +275,10 @@ class VcTimer(commands.Cog):
     ):
         assert ctx.guild
         async with self.config.guild(ctx.guild).users() as users:
-            if user.id not in users:
+            if str(user.id) not in users:
                 await ctx.send("User has no time registered")
                 return
-            users[user.id] -= time
+            users[str(user.id)] -= time
             await ctx.send(
                 "Subtracted "
                 + self._format_time(time)
