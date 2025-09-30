@@ -260,7 +260,7 @@ class VcTimer(commands.Cog):
         assert ctx.guild
         async with self.config.guild(ctx.guild).users() as users:
             if user.id not in users:
-                ctx.send("User has no time registered")
+                await ctx.send("User has no time registered")
                 return
             users[user.id] += time
             await ctx.send(
@@ -276,7 +276,7 @@ class VcTimer(commands.Cog):
         assert ctx.guild
         async with self.config.guild(ctx.guild).users() as users:
             if user.id not in users:
-                ctx.send("User has no time registered")
+                await ctx.send("User has no time registered")
                 return
             users[user.id] -= time
             await ctx.send(
