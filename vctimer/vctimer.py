@@ -61,7 +61,6 @@ class VcTimer(commands.Cog):
                                 has_multiple_users = len(non_bot_members) >= 2
 
                                 for member in non_bot_members:
-                                    print("channel member:", member)
                                     user_id = str(member.id)
 
                                     if has_multiple_users and member.voice != discord.VoiceState.self_deaf and member.voice != discord.VoiceState.self_mute:
@@ -288,15 +287,12 @@ class VcTimer(commands.Cog):
 
     @override
     async def cog_load(self):
-        print("adding task")
         self.check_vc_task = self.bot.loop.create_task(self.check_vc())
-        print("created task")
 
     @override
     async def cog_unload(self):
         if self.check_vc_task != None:
             self.check_vc_task.cancel()
-            print("cancelled task")
 
     @commands.guild_only()
     @commands.admin_or_can_manage_channel()

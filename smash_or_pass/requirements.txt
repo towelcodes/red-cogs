@@ -1,0 +1,3 @@
+anime-api
+py3-pinterest
+Google-Images-Search

@@ -1,0 +1,10 @@
+{
+  "discord.removeDetails": false,
+  "discord.removeLowerDetails": false,
+  "discord.detailsEditing": "Editing a Python file",
+  "discord.largeImage": "Editing a {lang} file",
+  "discord.lowerDetailsDebugging": "Debugging: {workspace}",
+  "discord.detailsDebugging": "Debugging a Python file",
+  "discord.lowerDetailsEditing": "At {current_line}:{current_column} ({total_lines} lines)",
+  "python.analysis.typeCheckingMode": "basic"
+}
