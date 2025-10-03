@@ -63,7 +63,12 @@ class VcTimer(commands.Cog):
                                 for member in non_bot_members:
                                     user_id = str(member.id)
 
-                                    if has_multiple_users and member.voice != discord.VoiceState.self_deaf and member.voice != discord.VoiceState.self_mute:
+                                    print(f"state for {member.name} is {member.voice}")
+                                    if (
+                                        has_multiple_users
+                                        and member.voice != discord.VoiceState.self_deaf
+                                        and member.voice != discord.VoiceState.self_mute
+                                    ):
                                         # time with others
                                         if user_id not in users:
                                             users[user_id] = 10
