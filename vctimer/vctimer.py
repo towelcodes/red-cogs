@@ -289,11 +289,20 @@ class VcTimer(commands.Cog):
                 + "'s time"
             )
 
-    @override
+    @commands.admin_or_can_manage_channel()
+    @commands.guild_only()
+    @commands.command()
+    async def reset_all_time(
+        self,
+        ctx: commands.Context,
+    ):
+        assert ctx.guild
+        await self.config.guild(ctx.guild).users.set({})
+        await ctx.send("all gone :(")
+
     async def cog_load(self):
         self.check_vc_task = self.bot.loop.create_task(self.check_vc())
 
-    @override
     async def cog_unload(self):
         if self.check_vc_task != None:
             self.check_vc_task.cancel()
